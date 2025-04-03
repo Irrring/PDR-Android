@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_map_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 上半部分：局部坐标系下的显示 -->
+    <com.example.newpdr.DataClass.PositionView
+        android:id="@+id/positionView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 下半部分：高德地图的 MapView -->
+    <com.amap.api.maps.MapView
+        android:id="@+id/amapView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="310dp" />
+
+</FrameLayout>
