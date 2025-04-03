@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -128,15 +129,24 @@ public class DataFragment extends Fragment {
     }
 
     private void startCollectionWithLocationCheck() {
-        if (viewModel.get_GaoDe_Location().getValue() != null) {
-            if (viewModel.get_BLH_Origin() == null) {
-                viewModel.set_BLH_Origin(viewModel.get_GaoDe_Location().getValue());
-                Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
-            }
-            viewModel.startCollection();
-        } else {
-            Toast.makeText(getContext(), "等待高德定位初始化，请稍后...", Toast.LENGTH_SHORT).show();
+
+        viewModel.startCollection();
+
+        // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
+        if (viewModel.get_GaoDe_Location().getValue() == null) {
+            Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
+        } else if (viewModel.get_BLH_Origin() == null) {
+            // 如果定位数据已返回但BLH原点未设置，则设置原点
+            viewModel.set_BLH_Origin(viewModel.get_GaoDe_Location().getValue());
+            Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
         }
+
+        // 进入磁强计校准模式，无论定位是否初始化
+        viewModel.isCalibrating.postValue(true);
+        CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
+        calibrationDialog.setCancelable(false);
+        calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
+
     }
 
     private void setupDataObservers() {
@@ -164,7 +174,14 @@ public class DataFragment extends Fragment {
                         );
                         break;
                     case MAG:
-                        viewModel.pdrProcessor.processMagnetometer(data.getValues());
+                        float[] magValues = data.getValues();
+                        // 如果磁强计已经标定，则使用校准补偿后的数据
+                        if (viewModel.magnetometerCalibrator.isCalibrated()) {
+                            magValues = viewModel.magnetometerCalibrator.applyCalibration(magValues);
+                            viewModel.pdrProcessor.processMagnetometer(magValues);
+                            Log.d("Cali","Calibrated?:  " + viewModel.magnetometerCalibrator.isCalibrated());
+                        }
+
                         break;
                     case PRESSURE:
                         break;

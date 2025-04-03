@@ -44,7 +44,7 @@ public class PDRProcessor {
 
     //region 公开接口
     public void processAccelerometer(long timestamp, float[] values) {
-        if (values == null || values.length < 3) return;
+        if (values == null || values.length < 3  || !initialHeadingSet) return;
 
         float magnitude = (float) Math.sqrt(values[0]*values[0] + values[1]*values[1] + values[2]*values[2]);
         accelWindow.add(new AccelData(timestamp, magnitude, values));
@@ -58,7 +58,7 @@ public class PDRProcessor {
     }
 
     public void processGyroscope(long timestamp, float[] values) {
-        if (values == null || values.length < 3 || lastAccelData == null) return;
+        if (values == null || values.length < 3 || lastAccelData == null || !initialHeadingSet) return;
 
         if (lastGyroTime == 0) {
             lastGyroTime = timestamp;

@@ -42,5 +42,6 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
     implementation("com.amap.api:3dmap:9.2.0")
     implementation("com.amap.api:location:6.1.0")
+    implementation("org.apache.commons:commons-math3:3.6.1")
 
 }

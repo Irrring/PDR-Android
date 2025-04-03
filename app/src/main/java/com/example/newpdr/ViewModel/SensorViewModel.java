@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.amap.api.maps.model.LatLng;
 import com.example.newpdr.DataClass.*;
+import com.example.newpdr.utils.MagnetometerCalibrator;
 import com.example.newpdr.utils.PDRProcessor;
 import com.example.newpdr.DataClass.PDRPoint;
 
@@ -63,6 +64,10 @@ public class SensorViewModel extends ViewModel {
     // 用于存储高德定位轨迹点，便于后续统一保存
     private final LinkedList<LatLng> GaoDe_History = new LinkedList<>();
 
+    // 磁强计标定方法类
+    public final MutableLiveData<Boolean> isCalibrating = new MutableLiveData<>(false);
+    public MagnetometerCalibrator magnetometerCalibrator = new MagnetometerCalibrator();
+
 
 
     /**
@@ -103,7 +108,12 @@ public class SensorViewModel extends ViewModel {
                         data.getValues()[1],
                         data.getValues()[2]
                 ));
+                // 如果处于校准模式，则存储磁强计数据
+                if (isCalibrating.getValue() != null && isCalibrating.getValue()) {
+                    magnetometerCalibrator.addSample(data.getValues());
+                }
                 break;
+
 
             case PRESSURE:
                 addPressureData(new PressureData(
