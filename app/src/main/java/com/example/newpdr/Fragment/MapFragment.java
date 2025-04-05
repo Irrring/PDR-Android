@@ -106,9 +106,7 @@ public class MapFragment extends Fragment {
         // Observer 2：观察最新的高德定位数据，更新红色高德定位轨迹
         viewModel.get_GaoDe_Location().observe(getViewLifecycleOwner(), gaodeLocation -> {
 
-            LatLng origin = viewModel.get_BLH_Origin();
-
-            if (gaodeLocation != null && aMap != null && origin != null) {
+            if (gaodeLocation != null && aMap != null && viewModel.magnetometerCalibrator.isCalibrated()) {
                 // 将最新的高德定位点添加到本地轨迹列表中
                 gaodeTrackPoints.add(gaodeLocation);
                 // 更新或创建高德定位轨迹的 Polyline（红色）

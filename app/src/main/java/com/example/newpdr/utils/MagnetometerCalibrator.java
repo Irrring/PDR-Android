@@ -1,5 +1,7 @@
 package com.example.newpdr.utils;
 
+import android.util.Log;
+
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ public class MagnetometerCalibrator {
     private double[] scale = new double[]{1.0, 1.0, 1.0};
     private boolean calibrated = false;
     // 设定最小采样数量
-    private static final int MIN_SAMPLES = 300;
+    private static final int MIN_SAMPLES = 200;
 
     /**
      * 添加一个采样数据，要求数据为3维向量
@@ -69,12 +71,8 @@ public class MagnetometerCalibrator {
 
         for (double[] sample : samples) {
             for (int i = 0; i < 3; i++) {
-                if (sample[i] < min[i]) {
-                    min[i] = sample[i];
-                }
-                if (sample[i] > max[i]) {
-                    max[i] = sample[i];
-                }
+                if (sample[i] < min[i]) min[i] = sample[i];
+                if (sample[i] > max[i]) max[i] = sample[i];
                 sum[i] += sample[i];
             }
         }
@@ -98,13 +96,37 @@ public class MagnetometerCalibrator {
 
     /**
      * 使用最小二乘法进行椭球拟合，并计算校准参数
-     * 返回 true 表示计算成功并更新了 bias 和 scale
+     * 返回 true 表示计算成功并更新了 bias 和 scale，否则返回 false。
      */
     public boolean computeCalibration() {
         if (!isCalibrationReady()) {
             return false;
         }
         int n = samples.size();
+
+        // 检查数据分布是否均匀：计算各轴的最小值和最大值
+        double[] min = new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE};
+        double[] max = new double[]{-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
+        for (double[] p : samples) {
+            for (int i = 0; i < 3; i++) {
+                if (p[i] < min[i]) {
+                    min[i] = p[i];
+                }
+                if (p[i] > max[i]) {
+                    max[i] = p[i];
+                }
+            }
+        }
+        double rangeX = max[0] - min[0];
+        double rangeY = max[1] - min[1];
+        double rangeZ = max[2] - min[2];
+        // 设定合理的阈值，具体数值需要根据实际设备情况调整
+        double threshold = 20.0;
+        if (rangeX < threshold || rangeY < threshold || rangeZ < threshold) {
+            // 数据分布不均，拒绝校准
+            return false;
+        }
+
         double[][] M = new double[n][6];
         double[] B = new double[n];
 
@@ -130,17 +152,32 @@ public class MagnetometerCalibrator {
         double A = params[0], B_coef = params[1], C = params[2];
         double D_coef = params[3], E_coef = params[4], F_coef = params[5];
 
+        // 检查参数合理性，避免 A、B、C 过小导致计算异常
+        if (Math.abs(A) < 1e-6 || Math.abs(B_coef) < 1e-6 || Math.abs(C) < 1e-6) {
+            return false;
+        }
+
         // 计算偏置： x0 = -D/(2A), y0 = -E/(2B), z0 = -F/(2C)
         double x0 = -D_coef / (2 * A);
         double y0 = -E_coef / (2 * B_coef);
         double z0 = -F_coef / (2 * C);
 
         // 计算常数 R = 1 + A*x0^2 + B*y0^2 + C*z0^2
-        double R_const = 1 + A * x0 * x0 + B_coef * y0 * y0 + C * z0 * z0;
+        double R_const = 1.0 + A * x0 * x0 + B_coef * y0 * y0 + C * z0 * z0;
+        if (R_const <= 0) {
+            return false;
+        }
+
+
         // 计算各轴半径
         double a = Math.sqrt(R_const / A);
         double b_val = Math.sqrt(R_const / B_coef);
         double c_val = Math.sqrt(R_const / C);
+        // 再次检查半径是否有效
+        if (Double.isNaN(a) || Double.isNaN(b_val) || Double.isNaN(c_val)) {
+            return false;
+        }
+
 
         // 更新硬铁校正偏置
         bias[0] = x0;
@@ -152,6 +189,10 @@ public class MagnetometerCalibrator {
         scale[0] = rAvg / a;
         scale[1] = rAvg / b_val;
         scale[2] = rAvg / c_val;
+
+        Log.d("MagCali","Bias: " + x0 + " " + y0 + " " + z0 + "   Scale: " + scale[0] + " " + scale[1] + " " + scale[2] );
+
+
 
         calibrated = true;
         return true;

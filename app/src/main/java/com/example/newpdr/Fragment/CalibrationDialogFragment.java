@@ -53,7 +53,7 @@ public class CalibrationDialogFragment extends DialogFragment {
                 Toast.makeText(getContext(), "磁强计标定完成，开始PDR解算", Toast.LENGTH_SHORT).show();
                 dismiss();
             } else {
-                Toast.makeText(getContext(), "标定失败，请继续采集数据", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "标定失败，请继续采集数据，注意数据的分布均匀性", Toast.LENGTH_SHORT).show();
             }
         });
 

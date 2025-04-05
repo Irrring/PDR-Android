@@ -132,20 +132,24 @@ public class DataFragment extends Fragment {
 
         viewModel.startCollection();
 
-        // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
-        if (viewModel.get_GaoDe_Location().getValue() == null) {
-            Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
-        } else if (viewModel.get_BLH_Origin() == null) {
-            // 如果定位数据已返回但BLH原点未设置，则设置原点
-            viewModel.set_BLH_Origin(viewModel.get_GaoDe_Location().getValue());
-            Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
+        // 刚打开是没有进行初始化的
+        if(!viewModel.magnetometerCalibrator.isCalibrated())
+        {
+            // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
+            if (viewModel.get_GaoDe_Location().getValue() == null) {
+                Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
+            }
+
+            // 进入磁强计校准模式，无论定位是否初始化
+            viewModel.isCalibrating.postValue(true);
+            CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
+            calibrationDialog.setCancelable(false);
+            calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
         }
 
-        // 进入磁强计校准模式，无论定位是否初始化
-        viewModel.isCalibrating.postValue(true);
-        CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
-        calibrationDialog.setCancelable(false);
-        calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
 
     }
 
@@ -179,7 +183,7 @@ public class DataFragment extends Fragment {
                         if (viewModel.magnetometerCalibrator.isCalibrated()) {
                             magValues = viewModel.magnetometerCalibrator.applyCalibration(magValues);
                             viewModel.pdrProcessor.processMagnetometer(magValues);
-                            Log.d("Cali","Calibrated?:  " + viewModel.magnetometerCalibrator.isCalibrated());
+                            //Log.d("Cali","Calibrated?:  " + viewModel.magnetometerCalibrator.isCalibrated());
                         }
 
                         break;
