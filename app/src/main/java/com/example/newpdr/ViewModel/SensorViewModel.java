@@ -1,7 +1,10 @@
 package com.example.newpdr.ViewModel;
 
+import android.app.Application;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -11,6 +14,7 @@ import com.example.newpdr.DataClass.*;
 import com.example.newpdr.utils.MagnetometerCalibrator;
 import com.example.newpdr.utils.PDRProcessor;
 import com.example.newpdr.DataClass.PDRPoint;
+import com.example.newpdr.utils.SettingsManager;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -23,8 +27,6 @@ public class SensorViewModel extends ViewModel {
 
     // 新增位置更新LiveData
     private final MutableLiveData<PDRPoint> latestPdrPoint = new MutableLiveData<>();
-
-
 
 
     // 分类历史存储（线程安全）
@@ -50,7 +52,7 @@ public class SensorViewModel extends ViewModel {
 
 
     // PDR 数据处理类
-    public  PDRProcessor pdrProcessor = new PDRProcessor();
+    public  PDRProcessor pdrProcessor;
 
 
     // 高德地图定位API数据保存接口（持续更新定位结果）
@@ -68,7 +70,7 @@ public class SensorViewModel extends ViewModel {
     public final MutableLiveData<Boolean> isCalibrating = new MutableLiveData<>(false);
     public MagnetometerCalibrator magnetometerCalibrator = new MagnetometerCalibrator();
 
-
+    private SettingsManager settingsManager;
 
     /**
      * 添加传感器数据（入口方法）
@@ -76,6 +78,20 @@ public class SensorViewModel extends ViewModel {
      */
 
     private int lastRecordedStepCount = 0;
+
+    public void initialize(SettingsManager settingsManager) {
+        if (settingsManager == null) {
+            Log.e("SensorViewModel", "SettingsManager is null!");
+        } else {
+            Log.d("SensorViewModel", "SettingsManager initialized successfully.");
+        }
+        this.settingsManager = settingsManager;
+        this.pdrProcessor = new PDRProcessor(settingsManager);
+    }
+
+    public SettingsManager getSettingsManager() {
+        return settingsManager;
+    }
 
     public void addSensorData(SensorData data) {
         // 更新实时数据流

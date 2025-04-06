@@ -33,6 +33,7 @@ import com.example.newpdr.Fragment.MapFragment;
 import com.example.newpdr.Fragment.SettingsFragment;
 import com.example.newpdr.R;
 import com.example.newpdr.ViewModel.SensorViewModel;
+import com.example.newpdr.utils.SettingsManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -62,7 +63,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private MapFragment mapFragment;
     private SettingsFragment settingsFragment;
 
-
+    // 配置信息
+    private SettingsManager settingsManager;
 
 
     @SuppressLint("MissingInflatedId")
@@ -74,9 +76,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 强制应用使用白天模式
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        // 初始化核心组件
+        // 传递 Context 给 SettingsManager
+        settingsManager = new SettingsManager(this); // `this` 是 Activity 的 Context
+
+        // 获取 ViewModel 并初始化
         viewModel = new ViewModelProvider(this).get(SensorViewModel.class);
+        viewModel.initialize(settingsManager);
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+
+        //>>>>>>>>>>>>>>>>>>>楼层探测相关配置获取>>>>>>>>>>>>>>>>>>>>
+//        boolean isFloorDetectionEnabled = settingsManager.isFloorDetectionEnabled();
+//        int initialFloor = settingsManager.getInitialFloor();
+//        float floorHeight = settingsManager.getFloorHeight();
+        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         // 初始化传感器
         initializeSensors();

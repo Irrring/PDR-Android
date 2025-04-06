@@ -1,6 +1,10 @@
 package com.example.newpdr.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.example.newpdr.DataClass.*;
 import java.util.LinkedList;
 
@@ -12,12 +16,7 @@ import java.util.LinkedList;
  *       然后用1维卡尔曼滤波估计该误差，补偿到nominalYaw中，再将误差状态清零。
  */
 public class PDRProcessor {
-    //region 常量配置
-    private static final int ACC_WINDOW_SIZE = 20;       // 加速度滑动窗口大小
-    private static final long MIN_STEP_INTERVAL = 300;     // 最小步间间隔(ms)
-    private static final double BASE_STEP_LENGTH = 0.7;    // 基础步长(m)
-    private static final float STEP_THRESHOLD = 10.8f;     // 脚步检测阈值(m/s²)
-    private static final float MAGNETIC_DECLINATION = (float) Math.toRadians(-3.3); // 地磁偏角
+
     // 过程噪声（针对航向角误差的1维状态）
     private static final double Q_heading = 1e-4;
     // 磁力计观测噪声
@@ -41,6 +40,34 @@ public class PDRProcessor {
     // 1维卡尔曼滤波协方差，表示航向角误差的方差
     private double P_heading = 1e-3;
     //endregion
+    private SettingsManager settingsManager;
+
+    //region 常量配置
+    private static final long MIN_STEP_INTERVAL = 300;     // 最小步间间隔(ms)
+    private static final float STEP_THRESHOLD = 10.8f;     // 脚步检测阈值(m/s²)
+
+    // 配置信息获取
+    private int ACC_WINDOW_SIZE = 20;       // 加速度滑动窗口大小 20
+
+    private  double BASE_STEP_LENGTH = 0.7;    // 基础步长(m) 0.7
+    private String stepModel = "constant";
+    private float height = 1.7f;
+    private float MAGNETIC_DECLINATION = -3.3f; // 地磁偏角
+
+    // 通过构造函数注入 SettingsManager
+    public PDRProcessor(SettingsManager settingsManager) {
+        if (settingsManager == null) {
+            Log.e("PDRProcessor", "SettingsManager is null");
+            throw new IllegalArgumentException("SettingsManager must not be null");
+        }
+        this.settingsManager = settingsManager;
+        // 获取配置
+        ACC_WINDOW_SIZE = settingsManager.getStepWindow();
+        BASE_STEP_LENGTH = settingsManager.getStepLength();
+        stepModel = settingsManager.getStepModel();
+        height = settingsManager.getHeight();
+        MAGNETIC_DECLINATION = (float) Math.toRadians(settingsManager.getMagneticDeclination());
+    }
 
     //region 公开接口
     public void processAccelerometer(long timestamp, float[] values) {
@@ -202,7 +229,7 @@ public class PDRProcessor {
     }
 
     private void updatePosition() {
-        double stepLength = estimateStepLength();
+        double stepLength = estimateStepLength(stepModel);
         position[0] += stepLength * Math.cos(filteredYaw); // 北向(Y)
         position[1] += stepLength * Math.sin(filteredYaw); // 东方(X)
 
@@ -210,8 +237,18 @@ public class PDRProcessor {
 
     }
 
-    private double estimateStepLength() {
-        return BASE_STEP_LENGTH;
+    // TODO:通过步长模型计算步长（常值or身高模型）
+    private double estimateStepLength(String stepModel) {
+        if ("constant".equals(stepModel)) {
+            // 如果是常值模型，返回固定的步长
+            return BASE_STEP_LENGTH;
+        } else if ("height".equals(stepModel)) {
+            // 如果是身高模型，根据身高计算步长, height 是从配置中获取的身高（m）
+            return height * 0.4;  // 要改
+        } else {
+            // 默认返回常值步长，防止出现非法值
+            return BASE_STEP_LENGTH;
+        }
     }
 
     /**

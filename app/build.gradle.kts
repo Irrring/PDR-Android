@@ -43,5 +43,6 @@ dependencies {
     implementation("com.amap.api:3dmap:9.2.0")
     implementation("com.amap.api:location:6.1.0")
     implementation("org.apache.commons:commons-math3:3.6.1")
-
+    implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
 }

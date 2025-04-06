@@ -43,7 +43,7 @@ import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
+import com.example.newpdr.utils.SettingsManager;
 public class DataFragment extends Fragment {
     private SensorViewModel viewModel;
     private LineChart accelChart, gyroChart;
@@ -131,26 +131,29 @@ public class DataFragment extends Fragment {
     private void startCollectionWithLocationCheck() {
 
         viewModel.startCollection();
+        SettingsManager settingsManager = viewModel.getSettingsManager();
 
-        // 刚打开是没有进行初始化的
-        if(!viewModel.magnetometerCalibrator.isCalibrated())
-        {
-            // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
-            if (viewModel.get_GaoDe_Location().getValue() == null) {
-                Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
-            }
-            else{
-                Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
-            }
+        // 判断是否需要进行标定
+        boolean isSensorCalibrated = settingsManager.isCalibrationRequired();
 
-            // 进入磁强计校准模式，无论定位是否初始化
-            viewModel.isCalibrating.postValue(true);
-            CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
-            calibrationDialog.setCancelable(false);
-            calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
+        // 如果需要标定，继续标定过程
+        if (isSensorCalibrated) {
+            // 刚打开是没有进行初始化的
+            if (!viewModel.magnetometerCalibrator.isCalibrated()) {
+                // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
+                if (viewModel.get_GaoDe_Location().getValue() == null) {
+                    Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
+                }
+
+                // 进入磁强计校准模式，无论定位是否初始化
+                viewModel.isCalibrating.postValue(true);
+                CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
+                calibrationDialog.setCancelable(false);
+                calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
+            }
         }
-
-
     }
 
     private void setupDataObservers() {
