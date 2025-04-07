@@ -27,7 +27,7 @@ public class MagnetometerCalibrator {
     // 存储采样数据，每个样本为一个三维点 {x, y, z}
     private final List<double[]> samples = new ArrayList<>();
     // 校准得到的偏置（硬铁校正）
-    private double[] bias = new double[3];
+    private double[] bias = new double[]{0.0,0.0,0.0};
     // 校准得到的缩放因子（软铁校正）
     private double[] scale = new double[]{1.0, 1.0, 1.0};
     private boolean calibrated = false;
@@ -197,6 +197,15 @@ public class MagnetometerCalibrator {
         calibrated = true;
         return true;
     }
+
+    /**
+     *  设置标定情况（如果不需要标定的话，需要直接设置为true）
+     */
+    public void setCalibrated(boolean isCali){
+        calibrated = isCali;
+    }
+
+
 
     /**
      * 判断当前是否已经校准

@@ -3,7 +3,9 @@ package com.example.newpdr.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +27,7 @@ public class SettingsFragment extends Fragment {
 
     private Switch magneticCalibrationSwitch, floorDetectionSwitch;
     private EditText stepLengthInput, heightInput, stepWindowInput, magneticDeclinationInput, initialFloorInput, floorHeightInput;
-    private RadioGroup stepModelGroup;
-    private Button btnSaveSettings;
+    private RadioGroup stepModelGroup;  // 需要监听的 RadioGroup
     private SharedPreferences preferences;
 
     @Nullable
@@ -38,7 +39,9 @@ public class SettingsFragment extends Fragment {
         initViews(view);
         loadSettings();
 
-        btnSaveSettings.setOnClickListener(v -> saveSettings());
+        // 设置每个输入框和开关的监听器，来实现自动保存
+        setListeners();
+
         return view;
     }
 
@@ -51,82 +54,66 @@ public class SettingsFragment extends Fragment {
         magneticDeclinationInput = view.findViewById(R.id.magnetic_declination_input);
         initialFloorInput = view.findViewById(R.id.initial_floor_input);
         floorHeightInput = view.findViewById(R.id.floor_height_input);
-        stepModelGroup = view.findViewById(R.id.step_model_group);
-        btnSaveSettings = view.findViewById(R.id.btn_save_settings);
+        stepModelGroup = view.findViewById(R.id.step_model_group); // 初始化 RadioGroup
 
         preferences = requireActivity().getSharedPreferences("PDR_Settings", Context.MODE_PRIVATE);
     }
 
+    private void setListeners() {
+        magneticCalibrationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            preferences.edit().putBoolean("calibrationRequired", isChecked).apply();
+            showToast("设置已保存");
+        });
 
-    private void saveSettings() {
-        SharedPreferences.Editor editor = preferences.edit();
+        floorDetectionSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            preferences.edit().putBoolean("floorDetection", isChecked).apply();
+            showToast("设置已保存");
+        });
 
-        // 传感器是否要校准
-        editor.putBoolean("calibrationRequired", magneticCalibrationSwitch.isChecked());
+        stepLengthInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
 
-        // 步长模型选择
-        int selectedModelId = stepModelGroup.getCheckedRadioButtonId();
-        if (selectedModelId == R.id.model_constant) {
-            editor.putString("stepModel", "constant");
-            String stepLength = stepLengthInput.getText().toString();
-            if (!isValidDecimal(stepLength)) {
-                showToast("请输入有效的步长值");
-                return;
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                String stepLength = stepLengthInput.getText().toString();
+                if (isValidDecimal(stepLength)) {
+                    preferences.edit().putFloat("stepLength", Float.parseFloat(stepLength)).apply();
+                    showToast("设置已保存");
+                }
             }
-            editor.putFloat("stepLength", Float.parseFloat(stepLength));
-        } else if (selectedModelId == R.id.model_height) {
-            editor.putString("stepModel", "height");
-            String height = heightInput.getText().toString();
-            if (!isValidDecimal(height)) {
-                showToast("请输入有效的身高值");
-                return;
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+
+        // 监听 stepModelGroup 的变化
+        stepModelGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            String stepModel = checkedId == R.id.model_constant ? "constant" : "height";
+            preferences.edit().putString("stepModel", stepModel).apply();
+            showToast("步骤模型设置已保存");
+        });
+
+        stepWindowInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                String stepWindow = stepWindowInput.getText().toString();
+                if (isValidInteger(stepWindow)) {
+                    preferences.edit().putInt("stepWindow", Integer.parseInt(stepWindow)).apply();
+                    showToast("设置已保存");
+                }
             }
-            editor.putFloat("height", Float.parseFloat(height));
-        } else {
-            showToast("请选择步长模型");
-            return;
-        }
 
-        // 步长探测窗口
-        String stepWindow = stepWindowInput.getText().toString();
-        if (!isValidInteger(stepWindow)) {
-            showToast("请输入有效的步长探测窗口");
-            return;
-        }
-        editor.putInt("stepWindow", Integer.parseInt(stepWindow));
-
-        // 磁偏角
-        String magneticDeclination = magneticDeclinationInput.getText().toString();
-        if (!isValidDecimal(magneticDeclination)) {
-            showToast("请输入有效的磁偏角值");
-            return;
-        }
-        editor.putFloat("magneticDeclination", Float.parseFloat(magneticDeclination));
-
-        // 楼层探测
-        editor.putBoolean("floorDetection", floorDetectionSwitch.isChecked());
-        if (floorDetectionSwitch.isChecked()) {
-            String initialFloor = initialFloorInput.getText().toString();
-            String floorHeight = floorHeightInput.getText().toString();
-            if (!isValidInteger(initialFloor)) {
-                showToast("请输入有效的初始楼层");
-                return;
-            }
-            if (!isValidDecimal(floorHeight)) {
-                showToast("请输入有效的单层高度");
-                return;
-            }
-            editor.putInt("initialFloor", Integer.parseInt(initialFloor));
-            editor.putFloat("floorHeight", Float.parseFloat(floorHeight));
-        }
-
-        // 保存数据
-        editor.apply();
-        showToast("设置已保存");
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
     }
 
     private void loadSettings() {
-        magneticCalibrationSwitch.setChecked(preferences.getBoolean("sensorCalibrated", false));
+        magneticCalibrationSwitch.setChecked(preferences.getBoolean("calibrationRequired", false));
         floorDetectionSwitch.setChecked(preferences.getBoolean("floorDetection", false));
 
         stepLengthInput.setText(getFormattedValue(preferences.getFloat("stepLength", 0.75f)));
@@ -136,6 +123,7 @@ public class SettingsFragment extends Fragment {
         initialFloorInput.setText(String.valueOf(preferences.getInt("initialFloor", 1)));
         floorHeightInput.setText(getFormattedValue(preferences.getFloat("floorHeight", 3.0f)));
 
+        // 设置步骤模型选择的状态
         String stepModel = preferences.getString("stepModel", "constant");
         if ("constant".equals(stepModel)) {
             stepModelGroup.check(R.id.model_constant);

@@ -130,30 +130,41 @@ public class DataFragment extends Fragment {
 
     private void startCollectionWithLocationCheck() {
 
-        viewModel.startCollection();
-        SettingsManager settingsManager = viewModel.getSettingsManager();
-
-        // 判断是否需要进行标定
-        boolean isSensorCalibrated = settingsManager.isCalibrationRequired();
-
+        // 通过 Setting 设置标定情况，如果不需要标定，直接设置为 “已经标定”
         // 如果需要标定，继续标定过程
-        if (isSensorCalibrated) {
-            // 刚打开是没有进行初始化的
-            if (!viewModel.magnetometerCalibrator.isCalibrated()) {
-                // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
-                if (viewModel.get_GaoDe_Location().getValue() == null) {
-                    Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
-                }
+        Log.d("MagCali","cali_require " + viewModel.getSettingsManager().isCalibrationRequired());
+        viewModel.magnetometerCalibrator.setCalibrated(!viewModel.getSettingsManager().isCalibrationRequired());
 
-                // 进入磁强计校准模式，无论定位是否初始化
-                viewModel.isCalibrating.postValue(true);
-                CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
-                calibrationDialog.setCancelable(false);
-                calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
+
+        viewModel.startCollection();
+
+
+        // 刚打开是没有进行初始化的
+        if (!viewModel.magnetometerCalibrator.isCalibrated()) {
+            // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
+            if (viewModel.get_GaoDe_Location().getValue() == null) {
+                Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
             }
+
+            // 进入磁强计校准模式，无论定位是否初始化
+            viewModel.isCalibrating.postValue(true);
+            CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
+            calibrationDialog.setCancelable(false);
+            calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
         }
+
+        // 再次检查定位结果是否合法
+        if(viewModel.magnetometerCalibrator.isCalibrated() && viewModel.get_GaoDe_Location().getValue() == null){
+            Toast.makeText(getContext(), "高德定位初始化中，请耐心等待...", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(getContext(), "初始化成分，开始解算！", Toast.LENGTH_SHORT).show();
+        }
+
+
+
     }
 
     private void setupDataObservers() {
