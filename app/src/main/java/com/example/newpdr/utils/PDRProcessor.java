@@ -26,6 +26,16 @@ public class PDRProcessor {
     //region 状态变量
     private final LinkedList<AccelData> accelWindow = new LinkedList<>();
     private long lastStepTime = 0;
+
+    private long currentTime=0;
+    //region 新增步间隔记录
+    private long lastStepInterval = 0;  // 上一次脚步时间间隔（毫秒）
+    private long prevStepInterval = 0;  // 上上次脚步时间间隔（毫秒）
+
+    private double steplength = 0;
+    //endregion
+
+
     private long lastGyroTime = 0;
     // nominalYaw：由陀螺仪积分得到的航向角（未经校正）
     private double nominalYaw = 0;
@@ -51,7 +61,7 @@ public class PDRProcessor {
 
     private  double BASE_STEP_LENGTH = 0.7;    // 基础步长(m) 0.7
     private String stepModel = "constant";
-    private float height = 1.7f;
+    private float height = 1.75f;
     private float MAGNETIC_DECLINATION = -3.3f; // 地磁偏角
 
     // 通过构造函数注入 SettingsManager
@@ -183,9 +193,17 @@ public class PDRProcessor {
         boolean overThreshold = smoothedMagnitudes[targetIndex] > STEP_THRESHOLD;
         boolean validInterval = (accelWindow.get(targetIndex).timestamp - lastStepTime) >= MIN_STEP_INTERVAL;
         if (isMaximum && overThreshold && validInterval) {
+
+            // 新增：计算时间间隔
+             currentTime = accelWindow.get(targetIndex).timestamp;
+            if (lastStepTime != 0) {
+                prevStepInterval = lastStepInterval;  // 保存旧间隔
+                lastStepInterval = currentTime - lastStepTime; // 计算新间隔
+            }
+
             updatePosition();
             stepCount++;
-            lastStepTime = accelWindow.get(targetIndex).timestamp;
+            lastStepTime = currentTime; // 更新最后一步时间
         }
     }
 
@@ -230,9 +248,12 @@ public class PDRProcessor {
 
     private void updatePosition() {
         double stepLength = estimateStepLength(stepModel);
+
+        Log.d("PDRProcessor", "Step Length: " + stepLength);
         position[0] += stepLength * Math.cos(filteredYaw); // 北向(Y)
         position[1] += stepLength * Math.sin(filteredYaw); // 东方(X)
 
+        Log.d("yaw","yaw: " + Math.toDegrees(filteredYaw) );
         Log.d("PDRProcessor","X: " + position[1] + " Y: " + position[0]);
 
     }
@@ -243,8 +264,31 @@ public class PDRProcessor {
             // 如果是常值模型，返回固定的步长
             return BASE_STEP_LENGTH;
         } else if ("height".equals(stepModel)) {
-            // 如果是身高模型，根据身高计算步长, height 是从配置中获取的身高（m）
-            return height * 0.4;  // 要改
+            // 无有效间隔数据时回退到默认值
+            if (lastStepInterval <= 0) return BASE_STEP_LENGTH;
+
+            Log.d("PDRProcessor","X: " + position[1] + " Y: " + position[0]);
+            // 处理首次间隔不足的情况（用当前间隔补足）
+            long prevInterval = prevStepInterval > 0 ? prevStepInterval : lastStepInterval;
+
+            // 计算加权平均时间间隔（转换为秒）
+            double interval1 = lastStepInterval / 1000.0;
+            double interval2 = prevInterval / 1000.0;
+            Log.d("interval","interval1: " + interval1 + " interval2:" + interval2);
+            double avgInterval = 0.8 * interval1 + 0.2 * interval2;
+
+            // 计算步频 S_f（步/秒）
+            double S_f = 1.0 / avgInterval;
+
+            Log.d("sf","sf: " + S_f );
+            Log.d("height","height: " + height );
+            steplength=0.7 + 0.371 * (height - 1.6) +
+                    0.227 * (S_f - 1.79) * (height / 1.6);
+
+
+            Log.d("steplength","steplengtn: " + steplength );
+            // 计算步长公式
+            return steplength;
         } else {
             // 默认返回常值步长，防止出现非法值
             return BASE_STEP_LENGTH;
