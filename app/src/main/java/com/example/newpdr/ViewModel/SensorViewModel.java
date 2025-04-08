@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.amap.api.maps.model.LatLng;
 import com.example.newpdr.DataClass.*;
+import com.example.newpdr.Project.ProjectDataManager;
 import com.example.newpdr.utils.MagnetometerCalibrator;
 import com.example.newpdr.utils.PDRProcessor;
 import com.example.newpdr.DataClass.PDRPoint;
@@ -34,13 +35,14 @@ public class SensorViewModel extends ViewModel {
     private final LinkedList<GyroData> gyroHistory = new LinkedList<>();
     private final LinkedList<MagData> magHistory = new LinkedList<>();
     private final LinkedList<PressureData> pressureHistory = new LinkedList<>();
+    private final LinkedList<PDRPoint> pdrHistory = new LinkedList<>();
 
     // 同步锁对象（每个传感器独立锁）
     private final Object accelLock = new Object();
     private final Object gyroLock = new Object();
     private final Object magLock = new Object();
     private final Object pressureLock = new Object();
-
+    private final Object pdrLock = new Object(); // 用于同步访问 pdrHistory
     // 控制状态
     private final MutableLiveData<Boolean> isCollecting = new MutableLiveData<>(false);
 
@@ -48,7 +50,6 @@ public class SensorViewModel extends ViewModel {
     // 新增PDR相关数据
     private final MutableLiveData<Double> currentYaw = new MutableLiveData<>(0.0);
     private final MutableLiveData<double[]> currentPosition = new MutableLiveData<>(new double[2]);
-    private final LinkedList<PDRPoint> pdrHistory = new LinkedList<>();
 
 
     // PDR 数据处理类
@@ -71,7 +72,7 @@ public class SensorViewModel extends ViewModel {
     public MagnetometerCalibrator magnetometerCalibrator = new MagnetometerCalibrator();
 
     private SettingsManager settingsManager;
-
+    private ProjectDataManager sensorDataManager;
     /**
      * 添加传感器数据（入口方法）
      * data 统一格式的传感器数据
@@ -252,6 +253,12 @@ public class SensorViewModel extends ViewModel {
         }
     }
 
+    // PDRPoint 获取接口
+    public List<PDRPoint> getPDRHistory() {
+        synchronized (pdrLock) {
+            return Collections.unmodifiableList(new LinkedList<>(pdrHistory));
+        }
+    }
 
     public PDRProcessor getPdrProcessor() {
         return pdrProcessor;

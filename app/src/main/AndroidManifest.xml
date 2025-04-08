@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!--用于写入缓存数据到扩展存储卡-->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!--用于读取缓存数据-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!--用于申请调用A-GPS模块-->
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
     <!--如果设置了target >= 28 如果需要启动后台定位则必须声明这个权限-->
@@ -32,6 +34,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NewPDR"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="31">
 
         <service android:name="com.amap.api.location.APSService" />
@@ -51,6 +54,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 项目列表界面（关键添加项） -->
+        <activity android:name=".Project.ProjectListActivity"
+            android:label="项目管理" />
     </application>
 
 </manifest>

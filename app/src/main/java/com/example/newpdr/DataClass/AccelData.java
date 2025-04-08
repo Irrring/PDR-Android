@@ -1,6 +1,9 @@
 package com.example.newpdr.DataClass;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class AccelData {
     private final long timestamp;
     private final float x;
@@ -28,5 +31,13 @@ public class AccelData {
 
     public float[] getValues() {
         return new float[]{x,y,z};
+    }
+    public JSONObject toJSON() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("timestamp", timestamp);
+        obj.put("x", x);
+        obj.put("y", y);
+        obj.put("z", z);
+        return obj;
     }
 }

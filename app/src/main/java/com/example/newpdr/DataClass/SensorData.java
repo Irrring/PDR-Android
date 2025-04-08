@@ -2,6 +2,9 @@ package com.example.newpdr.DataClass;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Locale;
 
 public class SensorData {
@@ -81,4 +84,6 @@ public class SensorData {
     public long getTimestamp() { return timestamp; }
     public SensorType getType() { return type; }
     public float[] getValues() { return values; }
+
+
 }

@@ -11,9 +11,18 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -31,13 +40,23 @@ import com.example.newpdr.DataClass.SensorData;
 import com.example.newpdr.Fragment.DataFragment;
 import com.example.newpdr.Fragment.MapFragment;
 import com.example.newpdr.Fragment.SettingsFragment;
+import com.example.newpdr.Project.*;
 import com.example.newpdr.R;
 import com.example.newpdr.ViewModel.SensorViewModel;
 import com.example.newpdr.utils.SettingsManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.card.MaterialCardView;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
@@ -66,6 +85,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // 配置信息
     private SettingsManager settingsManager;
 
+    // 项目管理
+    private ProjectManager projectManager;
+    private ArrayAdapter<String> spinnerAdapter;
+    private List<Project> projectList = new ArrayList<>(); // 保存当前项目列表
+    private Spinner projectSpinner;
+    private ImageButton btnNewProject;
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -85,7 +111,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
+        // 项目管理
+        projectSpinner = findViewById(R.id.project_spinner);
+        btnNewProject = findViewById(R.id.btn_new_project);
 
+        projectManager = ProjectManager.getInstance(this);
+
+        setupSpinner();
+        setupNewProjectButton();
+
+        // 跳转到项目列表界面
+        findViewById(R.id.btn_go_to_project_list).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, ProjectListActivity.class));
+            refreshSpinner();
+        });
+
+        // 在 MainActivity 中添加
+        findViewById(R.id.btn_save_project).setOnClickListener(v -> {
+            Project project = CurrentProjectHolder.getInstance().getCurrentProject();
+            if (project != null) {
+                // 核心保存调用（传入当前传感器数据）
+                projectManager.saveProjectData(project, viewModel, settingsManager);
+                Toast.makeText(this, "项目保存成功", Toast.LENGTH_SHORT).show();
+            }
+        });
         //>>>>>>>>>>>>>>>>>>>楼层探测相关配置获取>>>>>>>>>>>>>>>>>>>>
 //        boolean isFloorDetectionEnabled = settingsManager.isFloorDetectionEnabled();
 //        int initialFloor = settingsManager.getInitialFloor();
@@ -103,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // 初始化传感器状态观察者
         setupSensorStateObserver();
-
 
         // 初始化定位服务
         initLocationService();
@@ -164,6 +212,102 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         transaction.show(fragmentToShow);
         transaction.commit();
     }
+
+
+
+    // 切换项目
+    private void setupSpinner() {
+        projectList = projectManager.getAllProjects();
+        List<String> projectNames = new ArrayList<>();
+        for (Project p : projectList) {
+            projectNames.add(p.getProjectName());
+        }
+
+        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, projectNames);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        projectSpinner.setAdapter(spinnerAdapter);
+
+        // 设置选中事件
+        projectSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (position >= 0 && position < projectList.size()) {
+                    Project selectedProject = projectList.get(position);
+                    CurrentProjectHolder.getInstance().setCurrentProject(selectedProject);
+
+                    // 加载项目数据 TODO:如果有时间就做一下，整个项目的文件都以json形式存了，理论可行，但有点麻烦
+//                    loadSelectedProject(selectedProject);
+
+                    Toast.makeText(MainActivity.this, "切换到项目: " + selectedProject.getProjectName(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                // 空实现
+            }
+        });
+    }
+
+    private void setupNewProjectButton() {
+        btnNewProject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 弹出新建项目对话框
+                CreateProjectDialog dialog = new CreateProjectDialog(MainActivity.this, projectName -> {
+                    Project newProject = projectManager.createNewProject(projectName,viewModel,settingsManager);
+                    if (newProject != null) {
+                        // 创建成功后，刷新 Spinner 列表
+                        refreshSpinner(); // 调用封装好的方法来刷新 Spinner
+                        // 默认切换到新建的项目
+                        int newIndex = projectList.indexOf(newProject);
+                        if (newIndex >= 0) {
+                            projectSpinner.setSelection(newIndex);
+                        }
+                        Toast.makeText(MainActivity.this, "新建项目成功: " + newProject.getProjectName(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                dialog.show();
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            // 获取最新的项目列表
+            projectList = projectManager.getAllProjects();
+            refreshSpinner();
+        }
+    }
+
+    private void refreshSpinner() {
+        projectList = projectManager.getAllProjects(); // 获取最新的项目列表
+        List<String> projectNames = new ArrayList<>();
+        for (Project p : projectList) {
+            projectNames.add(p.getProjectName());
+        }
+
+        spinnerAdapter.clear();
+        spinnerAdapter.addAll(projectNames);
+        spinnerAdapter.notifyDataSetChanged();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (locationClient != null) {
+            locationClient.stopLocation();
+            locationClient.onDestroy();
+        }
+        unregisterSensors();
+    }
+
+
+
+    // *************************************************************
 
     private boolean hasLocationPermission() {
         return ContextCompat.checkSelfPermission(this,
@@ -359,12 +503,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // 可根据需要处理精度变化
     }
 
+
     @Override
     protected void onPause() {
         super.onPause();
         Boolean isCollecting = viewModel.isCollecting().getValue();
         if (Boolean.TRUE.equals(isCollecting)) {
             viewModel.stopCollection();
+        }
+//        saveProjectState(); // 保存项目
+    }
+    private void saveProjectState() {
+        Project current = CurrentProjectHolder.getInstance().getCurrentProject();
+        if (current != null) {
+            // 更新最后修改时间
+            current.setLastModified(new Date());
+
+            // 使用 ProjectDataManager 的 save 方法来保存项目
+//            ProjectDataManager.getInstance(this).save(current);
         }
     }
 }

@@ -2,10 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 项目管理卡片 -->
+    <!-- 项目管理卡片（修改后的版本） -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/project_card"
         android:layout_width="match_parent"
@@ -20,29 +21,52 @@
             android:orientation="horizontal"
             android:padding="8dp">
 
+            <!-- 项目标签 -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="当前项目:" />
+                android:gravity="center_vertical"
+                android:text="当前项目:"/>
 
+            <!-- 项目选择器 -->
             <Spinner
                 android:id="@+id/project_spinner"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1" />
+                android:layout_weight="2"
+                android:layout_marginStart="8dp"/>
 
+            <!-- 新增保存按钮 -->
+            <ImageButton
+                android:id="@+id/btn_save_project"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="保存项目"
+                android:src="@drawable/ic_save"/>
+
+            <!-- 原有功能按钮 -->
             <ImageButton
                 android:id="@+id/btn_new_project"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:layout_marginStart="4dp"
                 android:contentDescription="新建项目"
-                android:src="@drawable/ic_add" />
+                android:src="@drawable/ic_add"/>
+
+            <ImageButton
+                android:id="@+id/btn_go_to_project_list"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="删除项目"
+                android:src="@drawable/ic_delete"/>
+
         </LinearLayout>
+
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Fragment 容器 -->
+    <!-- 其余布局保持不变 -->
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
@@ -50,12 +74,11 @@
         app:layout_constraintTop_toBottomOf="@id/project_card"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
 
-    <!-- 底部导航栏 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="53dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:menu="@menu/bottom_nav_menu"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

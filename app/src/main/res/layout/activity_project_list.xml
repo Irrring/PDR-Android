@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- 顶部提示文本 -->
+    <TextView
+        android:id="@+id/header_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="项目列表 (长按删除项目)"
+        android:textSize="18sp"
+        android:textColor="#333333"
+        android:gravity="center"
+        android:padding="10dp"
+        android:textStyle="bold"/>
+
+    <!-- 项目列表 -->
+    <ListView
+        android:id="@+id/project_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header_text"
+        android:divider="#DDDDDD"
+        android:dividerHeight="1dp"
+        android:background="@android:color/white"/>
+
+</RelativeLayout>

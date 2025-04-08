@@ -2,6 +2,8 @@ package com.example.newpdr.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.io.File;
+
 public class SettingsManager {
 
     private static final String PREFS_NAME = "PDR_Settings";

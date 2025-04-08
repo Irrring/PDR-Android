@@ -2,6 +2,9 @@ package com.example.newpdr.DataClass;
 
 import com.amap.api.maps.model.LatLng;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class PDRPoint {
 
     public double x; // 东向位移（米）
@@ -37,4 +40,11 @@ public class PDRPoint {
         return new LatLng(newLat, newLng);
     }
 
+    public JSONObject toJSON() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("timestamp", timestamp);
+        obj.put("x", x);
+        obj.put("y", y);
+        return obj;
+    }
 }
