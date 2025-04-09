@@ -4,117 +4,427 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:padding="15dp"
+    android:clipToPadding="false">
 
-    <!-- 实时数据展示区（ScrollView） -->
-    <ScrollView
-        android:id="@+id/scrollViewData"
+    <!-- 顶部数据展示区：占屏幕高度 30% -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/data_container"
         android:layout_width="0dp"
-        android:layout_height="160dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <LinearLayout
-            android:id="@+id/llDataContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- 加速度计数据 -->
-            <TextView
-                android:id="@+id/tvAccel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="加速度计：等待数据..."
-                android:textSize="16sp" />
-
-            <!-- 陀螺仪数据 -->
-            <TextView
-                android:id="@+id/tvGyro"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="陀螺仪：等待数据..."
-                android:textSize="16sp" />
-
-            <!-- 磁强计数据 -->
-            <TextView
-                android:id="@+id/tvMag"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="磁强计：等待数据..."
-                android:textSize="16sp" />
-
-            <!-- 气压计数据 -->
-            <TextView
-                android:id="@+id/tvPressure"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="气压：等待数据..."
-                android:textSize="16sp" />
-        </LinearLayout>
-    </ScrollView>
-
-    <!-- 修改后的图表和控制面板部分 -->
-
-    <!-- 加速度图表 -->
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/accel_chart"
-        android:layout_width="421dp"
-        android:layout_height="153dp"
-        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scrollViewData" />
+        app:layout_constraintBottom_toTopOf="@id/chart_container"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.35">
 
-    <!-- 陀螺仪图表 -->
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/gyro_chart"
-        android:layout_width="408dp"
-        android:layout_height="144dp"
-        android:layout_marginTop="10dp"
+        <!-- 加速度计卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/accel_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/gyro_card"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.46"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.46"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintDimensionRatio="1:"
+            android:layout_marginEnd="12dp"
+            android:backgroundTint="#6200EE">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvAccel"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="加速度计"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAccelX"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="X: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvAccelY"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Y: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvAccelZ"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Z: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 陀螺仪卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/gyro_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/accel_card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.46"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.46"
+            app:layout_constraintDimensionRatio="1:"
+            android:layout_marginStart="12dp"
+            android:backgroundTint="#6200EE">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvGyro"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="陀螺仪"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvGyroX"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="X: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvGyroY"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Y: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvGyroZ"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Z: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 磁强计卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/mag_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_constraintTop_toBottomOf="@id/accel_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/pressure_card"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.46"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.46"
+            app:layout_constraintDimensionRatio="1:"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="12dp"
+            android:backgroundTint="#6200EE">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvMag"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="磁强计"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvMagX"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="X: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvMagY"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Y: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvMagZ"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="Z: --"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 气压计卡片 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/pressure_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_constraintTop_toBottomOf="@id/gyro_card"
+            app:layout_constraintStart_toEndOf="@id/mag_card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.46"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.46"
+            app:layout_constraintDimensionRatio="1:"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="12dp"
+            android:backgroundTint="#6200EE">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvPressure"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="气压"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 中间图表区：占屏幕高度 60% -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chart_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/data_container"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/accel_chart" />
+        app:layout_constraintBottom_toTopOf="@id/control_panel"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.5">
 
-    <!-- 控制面板 -->
-    <LinearLayout
+        <!-- 加速度图表 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/accel_chart_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/gyro_chart_card"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.45"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp">
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/accel_chart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- 陀螺仪图表 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/gyro_chart_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            app:layout_constraintTop_toBottomOf="@id/accel_chart_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.45"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp">
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/gyro_chart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 底部控制面板：占屏幕高度 10% -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/control_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:padding="16dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gyro_chart"
-        app:layout_constraintVertical_bias="0.275"
-        tools:layout_editor_absoluteX="2dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.10"
+        app:layout_constraintHeight_min="64dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_start"
             android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="开始采集" />
+            android:layout_height="0dp"
+            android:backgroundTint="#6200EE"
+            app:icon="@android:drawable/ic_media_play"
+            app:iconGravity="textEnd"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="0dp"
+            app:cornerRadius="8dp"
+            app:rippleColor="#BB86FC"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.3"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHeight_min="48dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_stop"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:contentDescription="开始采集"
+            android:layout_marginEnd="8dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_stop"
             android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="停止采集" />
+            android:layout_height="0dp"
+            android:backgroundTint="#6200EE"
+            app:icon="@android:drawable/ic_media_play"
+            app:iconGravity="textEnd"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="0dp"
+            app:cornerRadius="8dp"
+            app:rippleColor="#BB86FC"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.3"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHeight_min="48dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_start"
+            app:layout_constraintEnd_toStartOf="@id/btn_save"
+            android:contentDescription="停止采集"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"
             android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="保存数据" />
-    </LinearLayout>
+            android:layout_height="0dp"
+            android:backgroundTint="#6200EE"
+            app:icon="@android:drawable/ic_media_play"
+            app:iconGravity="textEnd"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="0dp"
+            app:cornerRadius="8dp"
+            app:rippleColor="#BB86FC"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.3"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.9"
+            app:layout_constraintHeight_min="48dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_stop"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="保存数据"
+            android:layout_marginStart="8dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

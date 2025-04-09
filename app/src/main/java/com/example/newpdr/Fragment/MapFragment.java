@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.amap.api.maps.AMap;
@@ -29,6 +32,10 @@ public class MapFragment extends Fragment {
     private PositionView positionView;
     private MapView mapView;
     private AMap aMap;
+
+    // 初始化右侧楼层
+    private View floorBar;
+    private TextView floorText;
 
     // 用于显示 PDR 轨迹（蓝色）的 Polyline
     private Polyline pdrPolyline;
@@ -65,6 +72,13 @@ public class MapFragment extends Fragment {
             aMap.getUiSettings().setTiltGesturesEnabled(true);
             aMap.getUiSettings().setRotateGesturesEnabled(true);
         }
+
+
+        // 设置右侧楼层高度
+        floorBar = rootView.findViewById(R.id.floor_bar);
+        floorText = rootView.findViewById(R.id.floor_text);
+        updateFloor(5); // 示例：初始化为 3 楼
+
         return rootView;
     }
 
@@ -125,6 +139,16 @@ public class MapFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void updateFloor(int floor) {
+        int maxFloors = 10; // 假设最大楼层为 10
+        float heightPercent = (float) floor / maxFloors;
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) floorBar.getLayoutParams();
+        params.height = 0; // 重置为 0 以使用百分比
+        params.matchConstraintPercentHeight = heightPercent;
+        floorBar.setLayoutParams(params);
+        floorText.setText(floor + "F");
     }
 
     // MapView 生命周期管理

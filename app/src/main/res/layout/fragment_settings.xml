@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp"
-    android:background="#F5F5F5">
+    android:clipToPadding="false"
+    android:background="#FAFAFA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="20dp">
+        android:paddingBottom="24dp">
 
         <!-- 传感器校准模块 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="12dp"
             android:background="@android:color/white">
 
             <LinearLayout
@@ -31,16 +35,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="磁强计校准"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
 
                 <Switch
                     android:id="@+id/magnetic_calibration_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="是否标定"
-                    android:layout_marginTop="8dp"/>
-
+                    android:text="启用标定"
+                    android:textSize="16sp"
+                    android:textColor="#424242"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -48,9 +55,11 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="12dp"
             android:background="@android:color/white">
 
             <LinearLayout
@@ -63,46 +72,67 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="步长模型"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
 
                 <RadioGroup
                     android:id="@+id/step_model_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginTop="12dp">
 
                     <RadioButton
                         android:id="@+id/model_constant"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="常值模型"/>
+                        android:text="常值模型"
+                        android:textSize="16sp"
+                        android:textColor="#424242" />
 
                     <RadioButton
                         android:id="@+id/model_height"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="身高模型"/>
+                        android:text="身高模型"
+                        android:textSize="16sp"
+                        android:textColor="#424242" />
                 </RadioGroup>
 
-                <EditText
-                    android:id="@+id/step_length_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:inputType="numberDecimal"
-                    android:hint="步长 (m)"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:hintTextColor="#757575"
+                    app:boxStrokeColor="#6200EE">
 
-                <EditText
-                    android:id="@+id/height_input"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/step_length_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp"
+                        android:hint="步长 (m)" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:inputType="numberDecimal"
-                    android:hint="身高 (m)"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:hintTextColor="#757575"
+                    app:boxStrokeColor="#6200EE">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/height_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp"
+                        android:hint="身高 (m)" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -110,9 +140,11 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="12dp"
             android:background="@android:color/white">
 
             <LinearLayout
@@ -125,16 +157,25 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="步长探测窗口"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
 
-                <EditText
-                    android:id="@+id/step_window_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:inputType="number"
-                    android:hint="建议值 20"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:hintTextColor="#757575"
+                    app:boxStrokeColor="#6200EE">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/step_window_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textSize="16sp"
+                        android:hint="建议值: 20 " />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -142,9 +183,11 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="12dp"
             android:background="@android:color/white">
 
             <LinearLayout
@@ -157,16 +200,25 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="当地磁偏角"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
 
-                <EditText
-                    android:id="@+id/magnetic_declination_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:inputType="numberSigned|numberDecimal"
-                    android:hint="东为正，西为负"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:hintTextColor="#757575"
+                    app:boxStrokeColor="#6200EE">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/magnetic_declination_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberSigned|numberDecimal"
+                        android:textSize="16sp"
+                        android:hint="东为正，西为负（deg）" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -174,8 +226,11 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="12dp"
             android:background="@android:color/white">
 
             <LinearLayout
@@ -188,40 +243,65 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="楼层探测"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
 
                 <Switch
                     android:id="@+id/floor_detection_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="启用楼层探测"
-                    android:layout_marginTop="8dp"/>
+                    android:textSize="16sp"
+                    android:textColor="#424242"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp" />
 
-                <EditText
-                    android:id="@+id/initial_floor_input"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:inputType="number"
-                    android:hint="初始楼层"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:hintTextColor="#757575"
+                    app:boxStrokeColor="#6200EE">
 
-                <EditText
-                    android:id="@+id/floor_height_input"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/initial_floor_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textSize="16sp"
+                        android:hint="初始楼层" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:inputType="numberDecimal"
-                    android:hint="单层高度 (m)"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:hintTextColor="#757575"
+                    app:boxStrokeColor="#6200EE">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/floor_height_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp"
+                        android:hint="单层高度 (m)" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- 保存按钮 -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save_settings"
             android:layout_width="match_parent"
             android:layout_height="56dp"
+            android:layout_marginTop="24dp"
             android:text="保存设置"
-            android:layout_marginTop="20dp"/>
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="8dp"
+            android:backgroundTint="#6200EE"
+            app:rippleColor="#BB86FC" />
     </LinearLayout>
 </ScrollView>

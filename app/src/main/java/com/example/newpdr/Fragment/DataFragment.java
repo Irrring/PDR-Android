@@ -3,7 +3,6 @@ package com.example.newpdr.Fragment;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.hardware.Sensor;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -12,7 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,7 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-
 import com.example.newpdr.DataClass.*;
 import com.example.newpdr.R;
 import com.example.newpdr.ViewModel.SensorViewModel;
@@ -31,6 +29,7 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -41,14 +40,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import com.example.newpdr.utils.SettingsManager;
+
 public class DataFragment extends Fragment {
     private SensorViewModel viewModel;
     private LineChart accelChart, gyroChart;
-    private Button btnStart, btnStop, btnSave;
-    private TextView tvAccel, tvGyro, tvMag, tvPressure;
+    private MaterialButton btnStart, btnStop, btnSave;
+
+    // 加速度计 TextView
+    private TextView tvAccel, tvAccelX, tvAccelY, tvAccelZ;
+    // 陀螺仪 TextView
+    private TextView tvGyro, tvGyroX, tvGyroY, tvGyroZ;
+    // 磁强计 TextView
+    private TextView tvMag, tvMagX, tvMagY, tvMagZ;
+    // 气压计 TextView
+    private TextView tvPressure;
 
     // 图表配置
     private static final int MAX_DATA_POINTS = 200;
@@ -61,6 +66,24 @@ public class DataFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_data, container, false);
         initViews(root);
         setupCharts();
+
+        // 动态设置按钮图标大小
+        MaterialButton btnStart = root.findViewById(R.id.btn_start);
+        MaterialButton btnStop = root.findViewById(R.id.btn_stop);
+        MaterialButton btnSave = root.findViewById(R.id.btn_save);
+
+        btnStart.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int buttonHeight = btnStart.getHeight();
+                int iconSize = (int) (buttonHeight * 0.8f);
+                btnStart.setIconSize(iconSize);
+                btnStop.setIconSize(iconSize);
+                btnSave.setIconSize(iconSize);
+                btnStart.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+
         return root;
     }
 
@@ -71,19 +94,31 @@ public class DataFragment extends Fragment {
         btnStop = root.findViewById(R.id.btn_stop);
         btnSave = root.findViewById(R.id.btn_save);
 
+        // 初始化加速度计 TextView
         tvAccel = root.findViewById(R.id.tvAccel);
+        tvAccelX = root.findViewById(R.id.tvAccelX);
+        tvAccelY = root.findViewById(R.id.tvAccelY);
+        tvAccelZ = root.findViewById(R.id.tvAccelZ);
+
+        // 初始化陀螺仪 TextView
         tvGyro = root.findViewById(R.id.tvGyro);
+        tvGyroX = root.findViewById(R.id.tvGyroX);
+        tvGyroY = root.findViewById(R.id.tvGyroY);
+        tvGyroZ = root.findViewById(R.id.tvGyroZ);
+
+        // 初始化磁强计 TextView
         tvMag = root.findViewById(R.id.tvMag);
+        tvMagX = root.findViewById(R.id.tvMagX);
+        tvMagY = root.findViewById(R.id.tvMagY);
+        tvMagZ = root.findViewById(R.id.tvMagZ);
+
+        // 初始化气压计 TextView
         tvPressure = root.findViewById(R.id.tvPressure);
     }
 
-
     private void setupCharts() {
-        // 配置加速度图表
         configureChart(accelChart, "加速度计数据",
                 new String[]{"X轴", "Y轴", "Z轴"}, ACCEL_COLORS);
-
-        // 配置陀螺仪图表
         configureChart(gyroChart, "陀螺仪数据",
                 new String[]{"X轴", "Y轴", "Z轴"}, GYRO_COLORS);
     }
@@ -119,7 +154,6 @@ public class DataFragment extends Fragment {
         setupButtonListeners();
         setupDataObservers();
         loadHistoryData();
-
     }
 
     private void setupButtonListeners() {
@@ -129,42 +163,27 @@ public class DataFragment extends Fragment {
     }
 
     private void startCollectionWithLocationCheck() {
-
-        // 通过 Setting 设置标定情况，如果不需要标定，直接设置为 “已经标定”
-        // 如果需要标定，继续标定过程
-        Log.d("MagCali","cali_require " + viewModel.getSettingsManager().isCalibrationRequired());
+        Log.d("MagCali", "cali_require " + viewModel.getSettingsManager().isCalibrationRequired());
         viewModel.magnetometerCalibrator.setCalibrated(!viewModel.getSettingsManager().isCalibrationRequired());
-
-
         viewModel.startCollection();
 
-
-        // 刚打开是没有进行初始化的
         if (!viewModel.magnetometerCalibrator.isCalibrated()) {
-            // 先提示用户“开始磁强计标定”，同时如果高德定位还未初始化，也给予提示
             if (viewModel.get_GaoDe_Location().getValue() == null) {
                 Toast.makeText(getContext(), "高德定位初始化中，同时进行磁强计校准，请耐心等待...", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "定位初始化成功！", Toast.LENGTH_SHORT).show();
             }
-
-            // 进入磁强计校准模式，无论定位是否初始化
             viewModel.isCalibrating.postValue(true);
             CalibrationDialogFragment calibrationDialog = new CalibrationDialogFragment();
             calibrationDialog.setCancelable(false);
             calibrationDialog.show(getParentFragmentManager(), "CalibrationDialog");
         }
 
-        // 再次检查定位结果是否合法
-        if(viewModel.magnetometerCalibrator.isCalibrated() && viewModel.get_GaoDe_Location().getValue() == null){
+        if (viewModel.magnetometerCalibrator.isCalibrated() && viewModel.get_GaoDe_Location().getValue() == null) {
             Toast.makeText(getContext(), "高德定位初始化中，请耐心等待...", Toast.LENGTH_SHORT).show();
-        }
-        else {
+        } else {
             Toast.makeText(getContext(), "初始化成功，开始解算！", Toast.LENGTH_SHORT).show();
         }
-
-
-
     }
 
     private void setupDataObservers() {
@@ -172,19 +191,14 @@ public class DataFragment extends Fragment {
             if (data != null) {
                 updateRealtimeDisplay(data);
 
-                // 新增PDR处理
                 switch (data.getType()) {
                     case ACCEL:
                         viewModel.pdrProcessor.processAccelerometer(
                                 System.currentTimeMillis(),
                                 data.getValues()
-
                         );
-
-                        // 新增：检查并记录PDR点
                         viewModel.checkAndRecordPdrPoint();
                         break;
-
                     case GYRO:
                         viewModel.pdrProcessor.processGyroscope(
                                 System.currentTimeMillis(),
@@ -193,23 +207,17 @@ public class DataFragment extends Fragment {
                         break;
                     case MAG:
                         float[] magValues = data.getValues();
-                        // 如果磁强计已经标定，则使用校准补偿后的数据
                         if (viewModel.magnetometerCalibrator.isCalibrated()) {
                             magValues = viewModel.magnetometerCalibrator.applyCalibration(magValues);
                             viewModel.pdrProcessor.processMagnetometer(magValues);
-                            //Log.d("Cali","Calibrated?:  " + viewModel.magnetometerCalibrator.isCalibrated());
                         }
-
                         break;
                     case PRESSURE:
                         break;
                 }
-
-
             }
         });
     }
-
 
     private void loadHistoryData() {
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -227,31 +235,34 @@ public class DataFragment extends Fragment {
         });
     }
 
-
-
-
     private void updateRealtimeDisplay(SensorData data) {
-        // 更新实时文本显示（原有逻辑）
-        if(data.getType() == SensorData.SensorType.ACCEL)
-        {
-            tvAccel.setText(data.toString());
-        }
-        else if (data.getType() == SensorData.SensorType.GYRO)
-        {
-            tvGyro.setText(data.toString());
-        }
-        else if (data.getType() == SensorData.SensorType.MAG)
-        {
-            tvMag.setText(data.toString());
-        }
-        else if (data.getType() == SensorData.SensorType.PRESSURE)
-        {
-            tvPressure.setText(data.toString());
+        float[] values = data.getValues();
+        String timestamp = String.valueOf(data.getTimestamp() % 100000); // 简化时间戳显示
+
+        switch (data.getType()) {
+            case ACCEL:
+                tvAccel.setText("加速度计");
+                tvAccelX.setText("X: " + String.format(Locale.US, "%.3f", values[0]));
+                tvAccelY.setText("Y: " + String.format(Locale.US, "%.3f", values[1]));
+                tvAccelZ.setText("Z: " + String.format(Locale.US, "%.3f", values[2]));
+                break;
+            case GYRO:
+                tvGyro.setText("陀螺仪");
+                tvGyroX.setText("X: " + String.format(Locale.US, "%.3f", values[0]));
+                tvGyroY.setText("Y: " + String.format(Locale.US, "%.3f", values[1]));
+                tvGyroZ.setText("Z: " + String.format(Locale.US, "%.3f", values[2]));
+                break;
+            case MAG:
+                tvMag.setText("磁强计");
+                tvMagX.setText("X: " + String.format(Locale.US, "%.3f", values[0]));
+                tvMagY.setText("Y: " + String.format(Locale.US, "%.3f", values[1]));
+                tvMagZ.setText("Z: " + String.format(Locale.US, "%.3f", values[2]));
+                break;
+            case PRESSURE:
+                tvPressure.setText("气压  " + String.format(Locale.US, "%.2f", values[0]));
+                break;
         }
 
-
-
-        // 新增图表实时更新
         Executors.newSingleThreadExecutor().execute(() -> {
             if (data.getType() == SensorData.SensorType.ACCEL) {
                 addChartEntry(accelChart, data, ACCEL_COLORS);
@@ -261,7 +272,7 @@ public class DataFragment extends Fragment {
         });
     }
 
-    private void updateChartAccelData(LineChart chart,  List<AccelData>  history) {
+    private void updateChartAccelData(LineChart chart, List<AccelData> history) {
         LineData data = chart.getData();
         if (data == null) return;
 
@@ -275,7 +286,6 @@ public class DataFragment extends Fragment {
                 entries.add(new Entry(time, value));
             }
 
-            // 批量更新数据集
             set.setValues(entries.subList(Math.max(0, entries.size() - MAX_DATA_POINTS), entries.size()));
         }
 
@@ -283,7 +293,7 @@ public class DataFragment extends Fragment {
         chart.invalidate();
     }
 
-    private void updateChartGyroData(LineChart chart,  List<GyroData>  history) {
+    private void updateChartGyroData(LineChart chart, List<GyroData> history) {
         LineData data = chart.getData();
         if (data == null) return;
 
@@ -297,7 +307,6 @@ public class DataFragment extends Fragment {
                 entries.add(new Entry(time, value));
             }
 
-            // 批量更新数据集
             set.setValues(entries.subList(Math.max(0, entries.size() - MAX_DATA_POINTS), entries.size()));
         }
 
@@ -305,12 +314,8 @@ public class DataFragment extends Fragment {
         chart.invalidate();
     }
 
-
-
     private void addChartEntry(LineChart chart, SensorData data, int[] colors) {
-        // 获取主线程Handler
         Handler mainHandler = new Handler(Looper.getMainLooper());
-
         mainHandler.post(() -> {
             LineData lineData = chart.getData();
             if (lineData == null) return;
@@ -318,31 +323,23 @@ public class DataFragment extends Fragment {
             long time = data.getTimestamp() % 100000;
             float[] values = data.getValues();
 
-            // 同步修改数据
             synchronized (lineData) {
                 for (int i = 0; i < 3; i++) {
                     LineDataSet set = (LineDataSet) lineData.getDataSetByIndex(i);
-
-                    // 使用安全方式操作数据
                     List<Entry> entries = new ArrayList<>(set.getValues());
                     if (entries.size() > MAX_DATA_POINTS) {
                         entries.remove(0);
                     }
                     entries.add(new Entry(time, values[i]));
-
-                    set.setValues(entries); // 原子性更新整个数据集
+                    set.setValues(entries);
                 }
             }
 
-            // 通知更新
             lineData.notifyDataChanged();
             chart.notifyDataSetChanged();
             chart.moveViewToX(lineData.getEntryCount());
         });
     }
-
-
-
 
     private void saveSensorData() {
         if (ContextCompat.checkSelfPermission(requireContext(),
@@ -350,7 +347,6 @@ public class DataFragment extends Fragment {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1002);
             return;
         }
-
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
@@ -392,7 +388,6 @@ public class DataFragment extends Fragment {
                     data.getZ()));
         }
     }
-
 
     private void showToast(String message) {
         requireActivity().runOnUiThread(() ->
