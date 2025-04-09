@@ -154,23 +154,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     // 如果是第一次启动，则创建并 add 所有 Fragment；如果不是则从 FragmentManager 中查找
     private void setupFragments(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            dataFragment = new DataFragment();
-            mapFragment = new MapFragment();
-            settingsFragment = new SettingsFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, dataFragment, "dataFragment")
-                    .add(R.id.fragment_container, mapFragment, "mapFragment")
-                    .hide(mapFragment)
-                    .add(R.id.fragment_container, settingsFragment, "settingsFragment")
-                    .hide(settingsFragment)
-                    .commit();
-        } else {
-            dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag("dataFragment");
-            mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment");
-            settingsFragment = (SettingsFragment) getSupportFragmentManager().findFragmentByTag("settingsFragment");
+        dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag("dataFragment");
+        mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag("mapFragment");
+        settingsFragment = (SettingsFragment) getSupportFragmentManager().findFragmentByTag("settingsFragment");
+
+        if (dataFragment == null) {
+            dataFragment = new DataFragment();
+            transaction.add(R.id.fragment_container, dataFragment, "dataFragment");
         }
+        if (mapFragment == null) {
+            mapFragment = new MapFragment();
+            transaction.add(R.id.fragment_container, mapFragment, "mapFragment").hide(mapFragment);
+        }
+        if (settingsFragment == null) {
+            settingsFragment = new SettingsFragment();
+            transaction.add(R.id.fragment_container, settingsFragment, "settingsFragment").hide(settingsFragment);
+        }
+
+        transaction.commit();
     }
 
     // 设置底部导航栏，选择时只需 show 对应的 Fragment 并隐藏其他 Fragment

@@ -160,7 +160,7 @@ public class DataFragment extends Fragment {
             Toast.makeText(getContext(), "高德定位初始化中，请耐心等待...", Toast.LENGTH_SHORT).show();
         }
         else {
-            Toast.makeText(getContext(), "初始化成分，开始解算！", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "初始化成功，开始解算！", Toast.LENGTH_SHORT).show();
         }
 
 
