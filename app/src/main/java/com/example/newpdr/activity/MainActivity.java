@@ -126,15 +126,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             refreshSpinner();
         });
 
-        // 在 MainActivity 中添加
         findViewById(R.id.btn_save_project).setOnClickListener(v -> {
-            Project project = CurrentProjectHolder.getInstance().getCurrentProject();
-            if (project != null) {
-                // 核心保存调用（传入当前传感器数据）
-                projectManager.saveProjectData(project, viewModel, settingsManager);
-                Toast.makeText(this, "项目保存成功", Toast.LENGTH_SHORT).show();
-            }
+            attemptToSaveProject();
         });
+
         //>>>>>>>>>>>>>>>>>>>楼层探测相关配置获取>>>>>>>>>>>>>>>>>>>>
 //        boolean isFloorDetectionEnabled = settingsManager.isFloorDetectionEnabled();
 //        int initialFloor = settingsManager.getInitialFloor();
@@ -247,6 +242,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 // 空实现
             }
         });
+    }
+
+    /**
+     * 尝试保存项目，如果没有项目则提示新建项目
+     */
+    private void attemptToSaveProject() {
+        Project project = CurrentProjectHolder.getInstance().getCurrentProject();
+        if (project != null) {
+            saveProject(project);
+        } else {
+            promptCreateProjectAndSave();
+        }
+    }
+
+    /**
+     * 保存项目数据
+     */
+    private void saveProject(Project project) {
+        projectManager.saveProjectData(project, viewModel, settingsManager);
+        Toast.makeText(this, "项目保存成功", Toast.LENGTH_SHORT).show();
+    }
+    private void promptCreateProjectAndSave() {
+        new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("请先创建一个项目")
+                .setPositiveButton("确定", (dialogInterface, i) -> {
+                    // 用户点确定后再弹新建项目对话框
+                    CreateProjectDialog dialog = new CreateProjectDialog(MainActivity.this, projectName -> {
+                        Project newProject = projectManager.createNewProject(projectName, viewModel, settingsManager);
+                        if (newProject != null) {
+                            refreshSpinner();
+                            int newIndex = projectList.indexOf(newProject);
+                            if (newIndex >= 0) {
+                                projectSpinner.setSelection(newIndex);
+                            }
+                            saveProject(newProject);
+                            Toast.makeText(MainActivity.this, "新建项目并保存成功: " + newProject.getProjectName(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "新建项目失败", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    dialog.show();
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void setupNewProjectButton() {
