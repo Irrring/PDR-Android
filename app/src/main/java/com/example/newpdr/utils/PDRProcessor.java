@@ -64,6 +64,18 @@ public class PDRProcessor {
     private float height = 1.75f;
     private float MAGNETIC_DECLINATION = -3.3f; // 地磁偏角
 
+
+    // region 高程探测相关变量
+    private boolean useAltitudeDetection = true; // 是否使用高程探测
+    private double initPressure;  // 基准气压（hPa）
+    private int initialFloor = 1;     // 初始楼层
+    private int currentFloor = 1;      // 当前楼层
+    private double FLOOR_HEIGHT = 3.0; // 每层高度3米
+    private static final int MIN_FLOOR = 1; // 最小楼层
+    private LinkedList<Double> pressureWindow = new LinkedList<>();
+    private static final int PRESSURE_WINDOW_SIZE = 10; // 气压数据滑动窗口大小
+    // endregion
+
     // 通过构造函数注入 SettingsManager
     public PDRProcessor(SettingsManager settingsManager) {
         if (settingsManager == null) {
@@ -77,9 +89,68 @@ public class PDRProcessor {
         stepModel = settingsManager.getStepModel();
         height = settingsManager.getHeight();
         MAGNETIC_DECLINATION = (float) Math.toRadians(settingsManager.getMagneticDeclination());
+
+
+
+        //TODO:建议配置添加高程探测相关内容
+        // 添加高程探测配置
+         useAltitudeDetection = settingsManager.isFloorDetectionEnabled();
+         initialFloor = settingsManager.getInitialFloor();
+         FLOOR_HEIGHT=settingsManager.getFloorHeight();
     }
 
     //region 公开接口
+
+    // 添加气压数据处理方法
+    public void processBarometer(double pressure) {
+        if (!useAltitudeDetection) return;
+
+        // 平滑滤波处理
+        pressureWindow.add(pressure);
+        if (pressureWindow.size() > PRESSURE_WINDOW_SIZE) {
+            pressureWindow.removeFirst();
+        }
+        double smoothedPressure = pressureWindow.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(pressure);
+
+        // 初始化基准气压
+        if (initPressure == 0) {
+            initPressure = smoothedPressure;
+            currentFloor = initialFloor;
+            Log.d("Pressure", "初始化基准气压: " + initPressure + " hPa, 初始楼层: " + currentFloor);
+            return;
+        }
+
+
+        double h_refer=44330.0*(1.0-Math.pow(initPressure*0.1/ 101.325, 1.0/5.255));
+
+        //Log.d("Pressure", "initPressure: "+initPressure);
+        // 计算海拔高度差
+        double h_current = calculateAltitude(smoothedPressure);
+
+        //Log.d("Pressure", "h_current "+h_current);
+        Log.d("Pressure", "dH  "+(h_current-h_refer));
+
+        // 计算楼层变化
+        int floorChange = (int)((h_current-h_refer) / FLOOR_HEIGHT);
+
+        currentFloor = Math.max(MIN_FLOOR, initialFloor + floorChange);
+        Log.d("Pressure", "当前楼层=" + currentFloor + "，海拔变化=" + (h_current-h_refer) + "m");
+
+    }
+
+    // 气压转海拔计算（使用提供的公式）
+    private double calculateAltitude(double currentPressure) {
+        return 44330.0 * (1.0 - Math.pow(currentPressure*0.1 / 101.325, 1.0/5.255));
+    }
+
+    // 添加获取当前楼层的方法
+    public int getCurrentFloor() {
+        return useAltitudeDetection ? currentFloor : initialFloor;
+    }
+
     public void processAccelerometer(long timestamp, float[] values) {
         if (values == null || values.length < 3  || !initialHeadingSet) return;
 

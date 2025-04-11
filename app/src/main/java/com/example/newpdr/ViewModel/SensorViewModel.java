@@ -49,6 +49,12 @@ public class SensorViewModel extends ViewModel {
 
     // 新增PDR相关数据
     private final MutableLiveData<Double> currentYaw = new MutableLiveData<>(0.0);
+
+    public final MutableLiveData<Integer> currentFloor = new MutableLiveData<>(1);
+
+    public MutableLiveData<Integer> getCurrentFloor() {
+        return currentFloor;
+    }
     private final MutableLiveData<double[]> currentPosition = new MutableLiveData<>(new double[2]);
 
 

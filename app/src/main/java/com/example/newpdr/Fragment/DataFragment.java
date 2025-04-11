@@ -219,6 +219,10 @@ public class DataFragment extends Fragment {
                         }
                         break;
                     case PRESSURE:
+                        // 添加气压数据处理
+                        double pressureValue = data.getValues()[0]; // 假设气压值在values[0]
+                        viewModel.pdrProcessor.processBarometer(pressureValue);
+                        viewModel.currentFloor.postValue(viewModel.pdrProcessor.getCurrentFloor());
                         break;
                 }
             }

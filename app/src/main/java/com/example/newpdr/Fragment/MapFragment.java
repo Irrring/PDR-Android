@@ -2,6 +2,7 @@ package com.example.newpdr.Fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -139,6 +140,16 @@ public class MapFragment extends Fragment {
                 }
             }
         });
+
+        // 观察楼层变化
+        viewModel.getCurrentFloor().observe(getViewLifecycleOwner(), floor -> {
+            if (floor != null) {
+                updateFloor(floor); // 调用 UI 更新方法
+
+            }
+        });
+
+
     }
 
     private void updateFloor(int floor) {
