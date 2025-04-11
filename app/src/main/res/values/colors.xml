@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+<color name="bg_light_green">#E8F5E9</color>  <!-- 整体背景色 -->
+<color name="card_light_green">#009688</color>  <!-- 卡片背景色 -->
+<color name="primary_green">#4CAF50</color>  <!-- 按钮主色 -->
+<color name="dark_green">#2E7D32</color>  <!-- 深绿 -->
+<color name="danger_red">#FF6B6B</color>  <!-- 保存按钮警告色 -->
+<color name="text_primary">#333333</color>  <!-- 主文字 -->
+<color name="text_secondary">#666666</color>  <!-- 次要文字 -->
+<color name="black">#FF000000</color>  <!-- 黑色 -->
+<color name="white">#FFFFFF</color>  <!-- 白色 -->
+<color name="card_stroke">?attr/colorOutline</color>  <!-- 使用主题轮廓色 -->
+
+<color name="bottom_nav_color">@color/selector_bottom_nav</color>
+<color name="selected_green">#009688</color>
+<color name="unselected_gray">#9E9E9E</color>
+
 </resources>

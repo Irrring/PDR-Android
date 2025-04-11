@@ -1,12 +1,15 @@
 package com.example.newpdr.Fragment;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,9 +34,12 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.google.android.material.button.MaterialButton;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -342,30 +348,34 @@ public class DataFragment extends Fragment {
     }
 
     private void saveSensorData() {
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1002);
-            return;
-        }
-
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-                String fileName = "sensor_data_" + sdf.format(new Date()) + ".csv";
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.MediaColumns.DISPLAY_NAME, "sensor_data_" +
+                        new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date()) + ".csv");
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "text/csv");
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS);
 
-                try (FileWriter writer = new FileWriter(new File(dir, fileName))) {
+                Uri uri = requireContext().getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
+
+                if (uri == null) {
+                    showToast("文件创建失败");
+                    return;
+                }
+
+                try (OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri);
+                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
                     writeAccelData(writer);
                     writeGyroData(writer);
-                    showToast("数据保存成功: " + fileName);
+                    requireActivity().runOnUiThread(() -> showToast("数据已保存到 'Documents' 文件夹"));
                 }
             } catch (IOException e) {
-                showToast("保存失败: " + e.getMessage());
+                requireActivity().runOnUiThread(() -> showToast("保存失败: " + e.getMessage()));
             }
         });
     }
 
-    private void writeAccelData(FileWriter writer) throws IOException {
+    private void writeAccelData(BufferedWriter writer) throws IOException {
         writer.write("加速度计数据\n");
         writer.write("时间戳,X,Y,Z\n");
         for (AccelData data : viewModel.getAccelHistory()) {
@@ -375,9 +385,9 @@ public class DataFragment extends Fragment {
                     data.getY(),
                     data.getZ()));
         }
+        writer.flush(); // 确保数据写入
     }
-
-    private void writeGyroData(FileWriter writer) throws IOException {
+    private void writeGyroData(BufferedWriter writer) throws IOException {
         writer.write("\n陀螺仪数据\n");
         writer.write("时间戳,X,Y,Z\n");
         for (GyroData data : viewModel.getGyroHistory()) {
@@ -387,6 +397,7 @@ public class DataFragment extends Fragment {
                     data.getY(),
                     data.getZ()));
         }
+        writer.flush(); // 确保数据写入
     }
 
     private void showToast(String message) {

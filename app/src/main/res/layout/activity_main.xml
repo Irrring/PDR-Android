@@ -21,12 +21,12 @@
             android:orientation="horizontal"
             android:padding="8dp">
 
-            <!-- 项目标签 -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:text="当前项目:"/>
+                android:text="当前项目:"
+                android:textColor="@color/text_secondary" />
 
             <!-- 项目选择器 -->
             <Spinner
@@ -34,7 +34,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/selected_green" />
 
             <!-- 新增保存按钮 -->
             <ImageButton
@@ -43,7 +44,7 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="4dp"
                 android:contentDescription="保存项目"
-                android:src="@drawable/ic_save"/>
+                android:src="@drawable/ic_save" /> <!-- 设置图标颜色为绿色系 -->
 
             <!-- 原有功能按钮 -->
             <ImageButton
@@ -75,10 +76,17 @@
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
+        style="@style/BottomNavStyle"
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="53dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_nav_menu"/>
+        app:menu="@menu/bottom_nav_menu"
+        android:background="?android:attr/windowBackground"
+        app:itemHorizontalTranslationEnabled="false"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:itemIconSize="28dp"
+        app:labelVisibilityMode="labeled"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

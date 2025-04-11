@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:padding="16dp"
     android:clipToPadding="false"
-    android:background="#FAFAFA">
+    android:background="@color/bg_light_green">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -107,7 +107,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:hintTextColor="#757575"
-                    app:boxStrokeColor="#6200EE">
+                    app:boxStrokeColor="@color/card_light_green">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/step_length_input"
@@ -123,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:hintTextColor="#757575"
-                    app:boxStrokeColor="#6200EE">
+                    app:boxStrokeColor="@color/card_light_green">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/height_input"
@@ -166,7 +166,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:hintTextColor="#757575"
-                    app:boxStrokeColor="#6200EE">
+                    app:boxStrokeColor="@color/card_light_green">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/step_window_input"
@@ -209,7 +209,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:hintTextColor="#757575"
-                    app:boxStrokeColor="#6200EE">
+                    app:boxStrokeColor="@color/card_light_green">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/magnetic_declination_input"
@@ -262,7 +262,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:hintTextColor="#757575"
-                    app:boxStrokeColor="#6200EE">
+                    app:boxStrokeColor="@color/card_light_green">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/initial_floor_input"
@@ -278,7 +278,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:hintTextColor="#757575"
-                    app:boxStrokeColor="#6200EE">
+                    app:boxStrokeColor="@color/card_light_green">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/floor_height_input"
@@ -301,7 +301,7 @@
             android:textSize="16sp"
             android:textColor="#FFFFFF"
             app:cornerRadius="8dp"
-            android:backgroundTint="#6200EE"
-            app:rippleColor="#BB86FC" />
+            android:backgroundTint="@color/dark_green"
+            app:rippleColor="@color/card_light_green" />
     </LinearLayout>
 </ScrollView>

@@ -1,9 +1,34 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.NewPDR" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <style name="Base.Theme.StepNav" parent="Theme.Material3.DayNight.NoActionBar">
+<!--        <item name="cardViewStyle">@style/ChartStyle</item>-->
     </style>
 
-    <style name="Theme.NewPDR" parent="Base.Theme.NewPDR" />
+    <style name="Theme.StepNav" parent="Base.Theme.StepNav">
+        <!-- 默认字体颜色 -->
+        <item name="android:textColor">@color/text_primary</item>
+        <!-- 按钮风格等 -->
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryVariant">@color/dark_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">@color/primary_green</item>
+        <item name="android:colorBackground">@color/bg_light_green</item>
+    </style>
+
+    <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_color</item>
+        <item name="itemTextColor">@color/bottom_nav_color</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_margin">0dp</item>
+    </style>
+
+    <!-- 按钮通用样式 -->
+    <style name="PrimaryButton">
+        <item name="android:backgroundTint">@color/primary_green</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
 </resources>
