@@ -136,6 +136,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        float floorHeight = settingsManager.getFloorHeight();
         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+
+        // 初始化保存监听器
+        setupSettingSaveListener();
+
         // 初始化传感器
         initializeSensors();
 
@@ -468,6 +472,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         barometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
     }
 
+
+    private void setupSettingSaveListener(){
+
+        viewModel.isSettingSave().observe(this, isSettingSave -> {
+            if (Boolean.FALSE.equals(isSettingSave)) {
+                viewModel.pdrProcessor.UpdateSettings(settingsManager);
+                viewModel.isSettingSave().postValue(true);
+            }
+        });
+
+
+    }
+
+
     private void registerSensors() {
         try {
             if (accelerometer != null) {
@@ -477,10 +495,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_GAME);
             }
             if (magnetometer != null) {
-                sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+                sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_GAME);
             }
             if (barometer != null) {
-                sensorManager.registerListener(this, barometer, SensorManager.SENSOR_DELAY_NORMAL);
+                sensorManager.registerListener(this, barometer, SensorManager.SENSOR_DELAY_GAME);
             }
         } catch (SecurityException e) {
             Toast.makeText(this, "安全异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();

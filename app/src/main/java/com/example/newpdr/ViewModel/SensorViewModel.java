@@ -55,6 +55,12 @@ public class SensorViewModel extends ViewModel {
     public MutableLiveData<Integer> getCurrentFloor() {
         return currentFloor;
     }
+
+    public MutableLiveData<Boolean> isSettingSave() {
+        return isSettingSave;
+    }
+
+
     private final MutableLiveData<double[]> currentPosition = new MutableLiveData<>(new double[2]);
 
 
@@ -77,8 +83,14 @@ public class SensorViewModel extends ViewModel {
     public final MutableLiveData<Boolean> isCalibrating = new MutableLiveData<>(false);
     public MagnetometerCalibrator magnetometerCalibrator = new MagnetometerCalibrator();
 
+    // 设置的实时更新
     private SettingsManager settingsManager;
     private ProjectDataManager sensorDataManager;
+
+    private final MutableLiveData<Boolean> isSettingSave = new MutableLiveData<>(false);
+
+
+
     /**
      * 添加传感器数据（入口方法）
      * data 统一格式的传感器数据

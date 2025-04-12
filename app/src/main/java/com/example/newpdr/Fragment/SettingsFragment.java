@@ -16,8 +16,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.newpdr.R;
+import com.example.newpdr.ViewModel.SensorViewModel;
 
 public class SettingsFragment extends Fragment {
 
@@ -26,6 +28,8 @@ public class SettingsFragment extends Fragment {
     private RadioGroup stepModelGroup;
     private SharedPreferences preferences;
     private Button saveSettingsButton;
+
+    private SensorViewModel viewModel;
 
     @Nullable
     @Override
@@ -57,6 +61,8 @@ public class SettingsFragment extends Fragment {
         saveSettingsButton = view.findViewById(R.id.btn_save_settings);
 
         preferences = requireActivity().getSharedPreferences("PDR_Settings", Context.MODE_PRIVATE);
+
+        viewModel = new ViewModelProvider(requireActivity()).get(SensorViewModel.class);
     }
 
     /**
@@ -66,12 +72,14 @@ public class SettingsFragment extends Fragment {
         // 磁强计校准开关监听器
         magneticCalibrationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             preferences.edit().putBoolean("calibrationRequired", isChecked).apply();
+            viewModel.isSettingSave().postValue(false);
             showToast("magneticCalibration", isChecked);
         });
 
         // 楼层检测开关监听器
         floorDetectionSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             preferences.edit().putBoolean("floorDetection", isChecked).apply();
+            viewModel.isSettingSave().postValue(false);
             showToast("floorDetection", isChecked);
         });
 
@@ -79,6 +87,7 @@ public class SettingsFragment extends Fragment {
         stepModelGroup.setOnCheckedChangeListener((group, checkedId) -> {
             String stepModel = checkedId == R.id.model_constant ? "constant" : "height";
             preferences.edit().putString("stepModel", stepModel).apply();
+            viewModel.isSettingSave().postValue(false);
             showToast("stepModel", true);
         });
 
@@ -86,36 +95,42 @@ public class SettingsFragment extends Fragment {
         stepLengthInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveEditTextValue(stepLengthInput, "stepLength", true, false);
+                viewModel.isSettingSave().postValue(false);
             }
         });
 
         heightInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveEditTextValue(heightInput, "height", true, false);
+                viewModel.isSettingSave().postValue(false);
             }
         });
 
         stepWindowInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveEditTextValue(stepWindowInput, "stepWindow", false, true);
+                viewModel.isSettingSave().postValue(false);
             }
         });
 
         magneticDeclinationInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveEditTextValue(magneticDeclinationInput, "magneticDeclination", true, false);
+                viewModel.isSettingSave().postValue(false);
             }
         });
 
         initialFloorInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveEditTextValue(initialFloorInput, "initialFloor", false, true);
+                viewModel.isSettingSave().postValue(false);
             }
         });
 
         floorHeightInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveEditTextValue(floorHeightInput, "floorHeight", true, false);
+                viewModel.isSettingSave().postValue(false);
             }
         });
 
@@ -156,6 +171,7 @@ public class SettingsFragment extends Fragment {
         String value = editText.getText().toString();
         if (isFloat && isValidDecimal(value)) {
             preferences.edit().putFloat(key, Float.parseFloat(value)).apply();
+
             showToast(key, true);
         } else if (isInteger && isValidInteger(value)) {
             preferences.edit().putInt(key, Integer.parseInt(value)).apply();

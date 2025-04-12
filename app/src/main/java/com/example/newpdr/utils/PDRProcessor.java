@@ -101,6 +101,31 @@ public class PDRProcessor {
 
     //region 公开接口
 
+    public void UpdateSettings(SettingsManager settingsManager)
+    {
+        if (settingsManager == null) {
+            Log.e("PDRProcessor", "SettingsManager is null");
+            throw new IllegalArgumentException("SettingsManager must not be null");
+        }
+        this.settingsManager = settingsManager;
+        // 获取配置
+        ACC_WINDOW_SIZE = settingsManager.getStepWindow();
+        BASE_STEP_LENGTH = settingsManager.getStepLength();
+        stepModel = settingsManager.getStepModel();
+        height = settingsManager.getHeight();
+        MAGNETIC_DECLINATION = (float) Math.toRadians(settingsManager.getMagneticDeclination());
+
+
+
+        //TODO:建议配置添加高程探测相关内容
+        // 添加高程探测配置
+        useAltitudeDetection = settingsManager.isFloorDetectionEnabled();
+        initialFloor = settingsManager.getInitialFloor();
+        FLOOR_HEIGHT=settingsManager.getFloorHeight();
+    }
+
+
+
     // 添加气压数据处理方法
     public void processBarometer(double pressure) {
         if (!useAltitudeDetection) return;

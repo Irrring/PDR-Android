@@ -152,16 +152,16 @@ public class PositionView extends View {
     // 绘制网格（逻辑坐标）
     private void drawGrid(Canvas canvas) {
         float step = 50;
-        for (int i = -200; i <= 200; i++) {
-            canvas.drawLine(i * step, -10000, i * step, 10000, gridPaint);
-            canvas.drawLine(-10000, i * step, 10000, i * step, gridPaint);
+        for (int i = -2000; i <= 2000; i++) {
+            canvas.drawLine(i * step, -100000, i * step, 100000, gridPaint);
+            canvas.drawLine(-100000, i * step, 100000, i * step, gridPaint);
         }
     }
 
     // 绘制坐标轴（逻辑坐标）
     private void drawAxes(Canvas canvas) {
-        canvas.drawLine(-10000, 0, 10000, 0, axisPaint);
-        canvas.drawLine(0, -10000, 0, 10000, axisPaint);
+        canvas.drawLine(-100000, 0, 100000, 0, axisPaint);
+        canvas.drawLine(0, -100000, 0, 100000, axisPaint);
     }
 
     // 绘制轨迹点（逻辑坐标）
