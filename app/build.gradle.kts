@@ -1,10 +1,25 @@
+import java.util.Properties
+
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+val apiKey = localProperties.getProperty("GAODE_API_KEY") ?: ""
+
+
 android {
     namespace = "com.example.newpdr"
     compileSdk = 35
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.example.newpdr"
@@ -13,11 +28,14 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        buildConfigField("String", "GAODE_API_KEY", "\"$apiKey\"")
+        manifestPlaceholders["GAODE_API_KEY"] = apiKey
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -25,6 +43,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

@@ -41,7 +41,7 @@
 
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="ec05001fe8b3deaa03d02e509d6e2999">
+            android:value="${GAODE_API_KEY}">
         </meta-data>
 
 
