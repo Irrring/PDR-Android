@@ -115,9 +115,7 @@ public class PDRProcessor {
         height = settingsManager.getHeight();
         MAGNETIC_DECLINATION = (float) Math.toRadians(settingsManager.getMagneticDeclination());
 
-
-
-        //TODO:建议配置添加高程探测相关内容
+        
         // 添加高程探测配置
         useAltitudeDetection = settingsManager.isFloorDetectionEnabled();
         initialFloor = settingsManager.getInitialFloor();
