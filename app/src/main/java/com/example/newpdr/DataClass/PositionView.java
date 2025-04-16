@@ -105,7 +105,7 @@ public class PositionView extends View {
     // 在屏幕坐标系绘制标签
     private void drawScreenLabels(Canvas canvas) {
         float logicalStep = 50; // 基础逻辑步长
-        int labelInterval = 5; // 每5个网格显示标签
+        int labelInterval = (int)(5/scaleFactor); // 每5个网格显示标签
         float labelStep = logicalStep * labelInterval; // 实际标签步长
 
         // 获取可见区域边界（逻辑坐标）
@@ -245,7 +245,7 @@ public class PositionView extends View {
             float centerY = point[1];
 
             scaleFactor *= detector.getScaleFactor();
-            scaleFactor = Math.max(0.5f, Math.min(scaleFactor, 3.0f));
+            scaleFactor = Math.max(0.05f, Math.min(scaleFactor, 5.0f));
 
             offsetX += (centerX - offsetX) * (1 - 1 / detector.getScaleFactor());
             offsetY += (centerY - offsetY) * (1 - 1 / detector.getScaleFactor());

@@ -19,7 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/chart_container"
-        app:layout_constraintHeight_percent="0.38">
+        app:layout_constraintHeight_percent="0.41">
 
         <!-- 第一行传感器卡片 -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -303,7 +303,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/control_panel"
         app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.50">
+        app:layout_constraintHeight_percent="0.47">
 
         <!-- 加速度图表 -->
         <androidx.cardview.widget.CardView
@@ -317,7 +317,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/gyro_chart_card"
             app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.40"
+            app:layout_constraintHeight_percent="0.43"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
@@ -341,7 +341,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.40"
+            app:layout_constraintHeight_percent="0.43"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
